@@ -7,6 +7,7 @@ function App() {
     <div className="App">
       
       <img src={png}/>
+      <img src={svg}/>
 
     </div>
   );
