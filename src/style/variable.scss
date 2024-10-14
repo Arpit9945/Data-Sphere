@@ -1,7 +1,10 @@
 
 /** Data Sphere Global CSS */
-$ds_blue_color: '#194FAC';
-$ds_gradient: linear-gradient(45deg, #7f4d78, #4d7d7f);
+$ds_blue_color: #194FAC;
+$ds_blue_color_hover : #1B222D;
+$ds_dark_color: #1b222d;
+$ds_gradient: linear-gradient(45deg, #194FAC,  #1B222D);
+$ds_font_family: "Rubik", sans-serif;
 $transition: 0.3s linear;
 
 /** Radius parameters */
@@ -12,7 +15,7 @@ $radius_small: 6px;
 $sivercr_normal: #C4C4C4;
 $font_cr_black : #19191B;
 $cr_white: #fff;
-$color_white: #ffffff;
+$cr_black: #000;
 
 /** Wdkit common group */
 $box-shadow: 2px 5px 4px 0px #0000003b;

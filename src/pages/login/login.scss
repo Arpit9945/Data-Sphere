@@ -1,0 +1,145 @@
+@import '/src/style/variable.scss';
+
+
+.ds-login-page {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+.ds-login-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    height: 500px;
+    width: 500px;
+    background: #0000001a;
+    backdrop-filter: blur(9px);
+    padding: 15px;
+    border-radius: $radius_big;
+    border: 1px solid gray;
+
+    .ds-login-via-gb {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+
+        .ds-login {
+            display: flex;
+            background: transparent;
+            justify-content: center;
+            gap: 10px;
+            align-items: center;
+            width: 100%;
+            border-radius: $radius_small;
+            padding: 8px;
+            color: $cr_white;
+            border: 1px solid white;
+            transition: $transition;
+            cursor: pointer;
+
+            &:hover {
+                background-color: #ffffff17;
+            }
+
+        }
+
+        svg {
+            width: 20px;
+        }
+
+    }
+
+    .ds-sign-email {
+        padding: 15px 0;
+        display: flex;
+        color: #dcdcde;
+        font-size: 12px;
+
+        .ds-line {
+            color: #C4C4C4;
+            width: 20%;
+            border: 0;
+            border-top: 1px solid #dcdcde;
+        }
+    }
+
+    .ds-login-form {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+
+        .ds-input-container {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            color: $cr_white;
+        }
+
+        .ds-login-label {
+            width: max-content;
+            cursor: pointer;
+        }
+
+        .ds-input {
+            padding: 15px;
+            background: transparent;
+            border: 1px solid gray;
+            border-radius: 4px;
+            color: $cr_white;
+            font-size: 14px;
+
+            &:focus {
+                border: 1px solid gray;
+                box-shadow: none;
+                outline: none;
+            }
+
+            &::placeholder {
+                color: #55575b;
+            }
+
+        }
+
+        .ds-pass-content {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            border: 1px solid gray;
+            border-radius: 4px;
+
+            .ds-input {
+                width: 95%;
+                border: none;
+
+                &:focus {
+                    border: none;
+                    box-shadow: none;
+                    outline: none;
+                }
+            }
+        }
+
+        svg {
+            width: 5%;
+            border-left: 1px solid gray;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+    }
+}
+
+@media (max-width: 576px) {
+    .ds-login-container {
+
+        width: 350px;
+
+        .ds-login-via-gb {
+            flex-wrap: wrap;
+        }
+    }
+}

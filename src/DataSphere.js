@@ -11,6 +11,18 @@ import {
 function App() {
   return (
     <div className="datasphere-app">
+        <ul className="ds-circles">
+          <li></li>
+          <li></li>
+          <li></li>
+          <li></li>
+          <li></li>
+          <li></li>
+          <li></li>
+          <li></li>
+          <li></li>
+          <li></li>
+        </ul>
       <HashRouter>
         <Header_menu />
         <Routes>

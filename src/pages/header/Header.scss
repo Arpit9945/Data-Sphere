@@ -1,40 +1,31 @@
 @import '/src/style/variable.scss';
 
-.ds-navigation-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: sticky;
-    top: 25px;
+.ds-navigaion-menu {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    width: 45px;
+    padding: 5px 10px;
+    background: $ds_gradient;
+    border-radius: 50px;
+    box-shadow: $box-shadow;
+    transition: $transition;
 
-    .ds-navigaion-menu {
-        width: 45px;
-        padding: 5px 10px;
-        background: $ds_gradient;
-        border-radius: 50px;
-        box-shadow: $box-shadow;
+    .ds-navigation-logo {
+        display: flex;
+        gap: 15px;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    span {
         transition: $transition;
+        border-radius: 50%;
+        padding: 5px;
+    }
 
-        .ds-navigation-logo {
-            display: flex;
-            gap: 15px;
-            justify-content: space-between;
-            align-items: center;
-
-            .active{
-                background-color: lightcoral;
-            }
-
-        }
-
-        span{
-            border-radius: 50%;
-            padding: 5px;
-        }
-
-        svg {
-            width: 35px;
-            cursor: pointer;
-        }
+    svg {
+        width: 35px;
+        cursor: pointer;
     }
 }
