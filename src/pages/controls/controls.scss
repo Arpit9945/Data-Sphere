@@ -1,0 +1,70 @@
+@import '/src/style/variable.scss';
+
+.ds-control-panel {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+    color: $cr_white;
+
+    .ds-control-box {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        height: 120px;
+        width: 120px;
+        background: linear-gradient(135deg, #3c3f51 0%, #1e1e2f 100%);
+        border: 1px solid gray;
+        border-radius: 10px;
+        padding: 10px;
+
+        .ds-control-label {
+            font-size: 22px;
+            margin: 10px 0;
+            font-weight: 600;
+            color: $cr_white;
+        }
+
+        .ds-control-tooltip {
+            position: absolute;
+            top: -20px;
+            left: 40px;
+            opacity: 0;
+            background-color: #000000bf;
+            color: $cr_white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition-duration: 0.2s;
+            pointer-events: none;
+            letter-spacing: 0.5px;
+        }
+
+        .ds-control-tooltip::before {
+            position: absolute;
+            content: "";
+            width: 10px;
+            height: 10px;
+            background-color: #000000bf;
+            background-size: 1000%;
+            background-position: center;
+            transform: rotate(45deg);
+            bottom: -15%;
+            transition-duration: 0.3s;
+        }
+
+        &:hover {
+            .ds-control-tooltip {
+                top: -40px;
+                opacity: 1;
+                transition-duration: 0.3s;
+            }
+        }
+
+    }
+
+}

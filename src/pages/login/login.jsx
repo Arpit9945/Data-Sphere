@@ -1,17 +1,77 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import './login.scss';
 import { auth, provider, signInWithPopup } from '../../firebase.js';
+import { connect } from 'react-redux';
+import { SetLogin } from '../../redux/action/actions.js';
+import { useNavigate } from 'react-router-dom';
 
-const Login_page = () => {
+
+const Login_page = (props) => {
 
     const [PassType, setPassType] = useState('password');
     const [EmailVal, setEmailVal] = useState('');
     const [PassVal, setPassVal] = useState('');
+    const [DirectLog, setDirectLog] = useState({
+        'google': false,
+        'facebook': false
+    });
+    const navigate = useNavigate()
 
-    const handleDirectLogin = async () => {
-        const result = await signInWithPopup(auth, provider);
-        const user = result.user;
-        console.log('User details:', user);
+    useEffect(() => {
+
+        const storedLoginData = localStorage.getItem('userLoginData');
+        // console.log(JSON.parse(storedLoginData));
+
+        props.ds_set_login(JSON.parse(storedLoginData));
+        navigate('/*')
+    }, []);
+
+    const keyUniqueID = () => {
+        let year = new Date().getFullYear().toString().slice(-2),
+            uid = Math.random().toString(36).substr(2, 6);
+        return uid + year;
+    }
+
+
+    const handleDirectLogin = (type) => {
+        let originalObj = DirectLog;
+        let newObj = Object.assign({}, originalObj, { [type]: true });
+        setDirectLog(newObj);
+
+        signInWithPopup(auth, provider)
+            .then((result) => {
+                const user = result.user;
+                if (result) {
+                    setDirectLog(originalObj);
+                    const direct_access = {
+                        email: user.email,
+                        password: keyUniqueID(),
+                    };
+                    props.ds_set_login(direct_access);
+                    navigate('/*')
+                }
+            })
+            .catch((error) => {
+                if (error.code === 'auth/popup-closed-by-user') {
+                    console.log('The popup was closed by the user before completing the sign in.');
+                } else {
+                    console.error('Error during sign-in:', error);
+                }
+                setDirectLog(originalObj);
+            });
+    };
+
+
+    const Update_login = () => {
+        const loginData = {
+            email: EmailVal,
+            password: PassVal
+        };
+
+        localStorage.setItem('userLoginData', JSON.stringify(loginData));
+
+        props.ds_set_login(loginData);
+        navigate('/*')
     }
 
     const sawPassword = () => {
@@ -27,22 +87,44 @@ const Login_page = () => {
             <div className="ds-login-container">
 
                 <div className='ds-login-via-gb'>
-                    <button className='ds-login' onClick={() => { handleDirectLogin() }} >
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-                            <path fill="#fbbb00" d="M113.47 309.408 95.648 375.94l-65.139 1.378C11.042 341.211 0 299.9 0 256c0-42.451 10.324-82.483 28.624-117.732h.014L86.63 148.9l25.404 57.644c-5.317 15.501-8.215 32.141-8.215 49.456.002 18.792 3.406 36.797 9.651 53.408z"></path>
-                            <path fill="#518ef8" d="M507.527 208.176C510.467 223.662 512 239.655 512 256c0 18.328-1.927 36.206-5.598 53.451-12.462 58.683-45.025 109.925-90.134 146.187l-.014-.014-73.044-3.727-10.338-64.535c29.932-17.554 53.324-45.025 65.646-77.911h-136.89V208.176h245.899z"></path>
-                            <path fill="#28b446" d="m416.253 455.624.014.014C372.396 490.901 316.666 512 256 512c-97.491 0-182.252-54.491-225.491-134.681l82.961-67.91c21.619 57.698 77.278 98.771 142.53 98.771 28.047 0 54.323-7.582 76.87-20.818l83.383 68.262z"></path>
-                            <path fill="#f14336" d="m419.404 58.936-82.933 67.896C313.136 112.246 285.552 103.82 256 103.82c-66.729 0-123.429 42.957-143.965 102.724l-83.397-68.276h-.014C71.23 56.123 157.06 0 256 0c62.115 0 119.068 22.126 163.404 58.936z"></path>
-                        </svg>
-                        <span>Connect via Google</span>
+                    <button className='ds-login' disabled={!!DirectLog.google} onClick={() => { handleDirectLogin('google') }} >
+                        {DirectLog?.google ?
+                            <div class="loading-spinner-inner">
+                                <div class="loading-spinner-circle"></div>
+                                <div class="loading-spinner-circle"></div>
+                                <div class="loading-spinner-circle"></div>
+                                <div class="loading-spinner-circle"></div>
+                            </div>
+                            :
+                            <>
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                                    <path fill="#fbbb00" d="M113.47 309.408 95.648 375.94l-65.139 1.378C11.042 341.211 0 299.9 0 256c0-42.451 10.324-82.483 28.624-117.732h.014L86.63 148.9l25.404 57.644c-5.317 15.501-8.215 32.141-8.215 49.456.002 18.792 3.406 36.797 9.651 53.408z"></path>
+                                    <path fill="#518ef8" d="M507.527 208.176C510.467 223.662 512 239.655 512 256c0 18.328-1.927 36.206-5.598 53.451-12.462 58.683-45.025 109.925-90.134 146.187l-.014-.014-73.044-3.727-10.338-64.535c29.932-17.554 53.324-45.025 65.646-77.911h-136.89V208.176h245.899z"></path>
+                                    <path fill="#28b446" d="m416.253 455.624.014.014C372.396 490.901 316.666 512 256 512c-97.491 0-182.252-54.491-225.491-134.681l82.961-67.91c21.619 57.698 77.278 98.771 142.53 98.771 28.047 0 54.323-7.582 76.87-20.818l83.383 68.262z"></path>
+                                    <path fill="#f14336" d="m419.404 58.936-82.933 67.896C313.136 112.246 285.552 103.82 256 103.82c-66.729 0-123.429 42.957-143.965 102.724l-83.397-68.276h-.014C71.23 56.123 157.06 0 256 0c62.115 0 119.068 22.126 163.404 58.936z"></path>
+                                </svg>
+                                <span>Connect via Google</span>
+                            </>
+                        }
                     </button>
-                    <button className='ds-login'>
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="126.445 2.281 589 589">
-                            <circle cx="420.945" cy="296.781" r="294.5" fill="#3c5a9a"></circle>
-                            <path fill="#fff" d="M516.704 92.677h-65.239c-38.715 0-81.777 16.283-81.777 72.402.189 19.554 0 38.281 0 59.357H324.9v71.271h46.174v205.177h84.847V294.353h56.002l5.067-70.117h-62.531s.14-31.191 0-40.249c0-22.177 23.076-20.907 24.464-20.907 10.981 0 32.332.032 37.813 0V92.677h-.032z"></path>
-                        </svg>
-
-                        <span>Connect via Facebook</span>
+                    <button className='ds-login' disabled={!!DirectLog.facebook} onClick={() => { handleDirectLogin('facebook') }}>
+                        {
+                            DirectLog?.facebook ?
+                                <div class="loading-spinner-inner">
+                                    <div class="loading-spinner-circle"></div>
+                                    <div class="loading-spinner-circle"></div>
+                                    <div class="loading-spinner-circle"></div>
+                                    <div class="loading-spinner-circle"></div>
+                                </div>
+                                :
+                                <>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="126.445 2.281 589 589">
+                                        <circle cx="420.945" cy="296.781" r="294.5" fill="#3c5a9a"></circle>
+                                        <path fill="#fff" d="M516.704 92.677h-65.239c-38.715 0-81.777 16.283-81.777 72.402.189 19.554 0 38.281 0 59.357H324.9v71.271h46.174v205.177h84.847V294.353h56.002l5.067-70.117h-62.531s.14-31.191 0-40.249c0-22.177 23.076-20.907 24.464-20.907 10.981 0 32.332.032 37.813 0V92.677h-.032z"></path>
+                                    </svg>
+                                    <span>Connect via Facebook</span>
+                                </>
+                        }
                     </button>
                 </div>
 
@@ -74,6 +156,18 @@ const Login_page = () => {
 
                         </span>
                     </div>
+                    <div className='ds-tnc'>
+                        <input id='tandc' type='checkbox' className='ds-checkbox' />
+                        <label htmlFor='tandc'>
+                            Agree with Terms and conditions of Data Sphere
+                        </label>
+                    </div>
+                </div>
+
+                <div className='ds-login-req'>
+                    <button className='ds-gradient-btn ds-login-btn' onClick={() => { Update_login() }}>
+                        Login
+                    </button>
                 </div>
 
             </div>
@@ -81,4 +175,12 @@ const Login_page = () => {
     )
 }
 
-export default Login_page;
+const get_login_data = state => ({
+    AccountDetails: state.LoginData,
+});
+
+const mapsetLoginData = dispatch => ({
+    ds_set_login: (data) => dispatch(SetLogin(data))
+});
+
+export default connect(get_login_data, mapsetLoginData)(Login_page);

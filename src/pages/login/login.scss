@@ -14,9 +14,9 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
-    height: 500px;
-    width: 500px;
-    background: #0000001a;
+    height: 350px;
+    width: 400px;
+    background: #1e1e2f4d;
     backdrop-filter: blur(9px);
     padding: 15px;
     border-radius: $radius_big;
@@ -71,6 +71,7 @@
         display: flex;
         flex-direction: column;
         gap: 10px;
+        color: $cr_white;
 
         .ds-input-container {
             display: flex;
@@ -130,13 +131,85 @@
             cursor: pointer;
         }
 
+        .ds-tnc {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+
+            label {
+                cursor: pointer;
+            }
+
+        }
+
     }
+
+    .ds-login-req {
+        display: flex;
+        justify-content: center;
+    }
+
+    .ds-login-btn {
+        width: 100%;
+        margin-top: 20px;
+    }
+
+    /** Loader */
+
+    .loading-spinner-inner {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 4px;
+    }
+
+    .loading-spinner-circle {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: $cr_white;
+        margin: 0 5px;
+        animation: loading-spinner 1s ease-in-out infinite;
+    }
+
+    .loading-spinner-circle:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+
+    .loading-spinner-circle:nth-child(3) {
+        animation-delay: 0.4s;
+    }
+
+    .loading-spinner-circle:nth-child(4) {
+        animation-delay: 0.6s;
+    }
+
+    @keyframes loading-spinner {
+        0% {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        20% {
+            transform: scale(1.5);
+            opacity: 0.5;
+        }
+
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+
 }
 
 @media (max-width: 576px) {
     .ds-login-container {
 
         width: 350px;
+        height: max-content;
 
         .ds-login-via-gb {
             flex-wrap: wrap;
