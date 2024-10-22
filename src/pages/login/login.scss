@@ -14,7 +14,7 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
-    height: 350px;
+    height: max-content;
     width: 400px;
     background: #1e1e2f4d;
     backdrop-filter: blur(9px);
@@ -70,7 +70,7 @@
     .ds-login-form {
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 20px;
         color: $cr_white;
 
         .ds-input-container {
@@ -78,6 +78,11 @@
             flex-direction: column;
             gap: 5px;
             color: $cr_white;
+        }
+
+        .ds-step-content{
+            display: flex;
+            justify-content: flex-end;
         }
 
         .ds-login-label {
@@ -103,6 +108,12 @@
                 color: #55575b;
             }
 
+        }
+
+        .ds-loginform-error{
+            margin: 0;
+            color: red;
+            font-size: 13px;
         }
 
         .ds-pass-content {
@@ -148,6 +159,46 @@
     .ds-login-req {
         display: flex;
         justify-content: center;
+        flex-direction: column;
+        align-items: center;
+
+        .ds-signup-link {
+            margin: 10px 0 0 0;
+            color: $cr_white;
+            font-size: 12px;
+
+            button {
+                position: relative;
+                color: #7eadff;
+                background: none;
+                border: none;
+                padding: 0;
+                cursor: pointer;
+
+                &::after {
+                    content: "";
+                    position: absolute;
+                    width: 100%;
+                    transform: scaleX(0);
+                    height: 2px;
+                    bottom: -6px;
+                    left: 0;
+                    background-color: #7eadff;
+                    transform-origin: bottom right;
+                    transition: transform 0.25s ease-out;
+                }
+
+                &:hover{
+                    &::after{
+                        transform: scaleX(1);
+                        transform-origin: bottom left;
+                    }
+                }
+
+            }
+
+        }
+
     }
 
     .ds-login-btn {

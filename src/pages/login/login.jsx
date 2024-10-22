@@ -2,35 +2,37 @@ import { useEffect, useState } from 'react';
 import './login.scss';
 import { auth, provider, signInWithPopup } from '../../firebase.js';
 import { connect } from 'react-redux';
-import { SetLogin } from '../../redux/action/actions.js';
+import { SetLogin, SetNotification } from '../../redux/action/actions.js';
 import { useNavigate } from 'react-router-dom';
 
 
 const Login_page = (props) => {
 
     const [PassType, setPassType] = useState('password');
+    const [Username, setUsername] = useState('');
     const [EmailVal, setEmailVal] = useState('');
+    const [ShowError, setShowError] = useState(false);
+    const [PassError, setPassError] = useState('');
     const [PassVal, setPassVal] = useState('');
+    const [ConfirmPass, setConfirmPass] = useState('');
+    const [login_type, setLogin_type] = useState('login');
+    const [StepCount, setStepCount] = useState('step-1');
     const [DirectLog, setDirectLog] = useState({
         'google': false,
         'facebook': false
     });
     const navigate = useNavigate()
+    const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-    useEffect(() => {
 
-        const storedLoginData = localStorage.getItem('userLoginData');
-        // console.log(JSON.parse(storedLoginData));
+    // useEffect(() => {
+    //     const storedLoginData = localStorage.getItem('ds-userLoginData');
 
-        props.ds_set_login(JSON.parse(storedLoginData));
-        navigate('/*')
-    }, []);
-
-    const keyUniqueID = () => {
-        let year = new Date().getFullYear().toString().slice(-2),
-            uid = Math.random().toString(36).substr(2, 6);
-        return uid + year;
-    }
+    //     if (storedLoginData) {
+    //         props.ds_set_login(JSON.parse(storedLoginData));
+    //         navigate('/')
+    //     }
+    // }, []);
 
 
     const handleDirectLogin = (type) => {
@@ -40,15 +42,8 @@ const Login_page = (props) => {
 
         signInWithPopup(auth, provider)
             .then((result) => {
-                const user = result.user;
                 if (result) {
                     setDirectLog(originalObj);
-                    const direct_access = {
-                        email: user.email,
-                        password: keyUniqueID(),
-                    };
-                    props.ds_set_login(direct_access);
-                    navigate('/*')
                 }
             })
             .catch((error) => {
@@ -62,16 +57,11 @@ const Login_page = (props) => {
     };
 
 
-    const Update_login = () => {
-        const loginData = {
-            email: EmailVal,
-            password: PassVal
-        };
+    const Update_login = (type) => {
+        if ('Signup' === type) {
+            props.ds_set_notification('Login Succeeded!', "You've logged into your account!", 'success');
+        }
 
-        localStorage.setItem('userLoginData', JSON.stringify(loginData));
-
-        props.ds_set_login(loginData);
-        navigate('/*')
     }
 
     const sawPassword = () => {
@@ -80,6 +70,41 @@ const Login_page = (props) => {
         } else {
             setPassType('password')
         }
+    }
+
+    const handleValue = (type) => {
+
+        if ('signup' === type) {
+
+            if (!PassVal.trim() && !ConfirmPass.trim()) {
+                setShowError(true);
+                setPassError('Kindly fill both correctly');
+            } else if (PassVal !== ConfirmPass) {
+                setShowError(true);
+                setPassError('Password and confirm password must be equal');
+            } else {
+
+                setShowError(false);
+
+                let userData = {
+                    'username': Username,
+                    'email': EmailVal,
+                    'password': PassVal
+                }
+                props.ds_set_login(userData);
+                localStorage.setItem('ds-userLoginData', JSON.stringify(userData));
+                navigate('/')
+                props.ds_set_notification('Login Success!', "WelCome to Data phere!", 'success');
+            }
+        } else {
+            if (regex.test(EmailVal) && Username.trim()) {
+                setStepCount('step-2');
+                setShowError(false);
+            } else {
+                setShowError(true);
+            }
+        }
+
     }
 
     return (
@@ -130,45 +155,124 @@ const Login_page = (props) => {
 
                 <div className="ds-sign-email">
                     <hr className="ds-line" />
-                    <span className="ds-line-text">Or Sign Up with Email</span>
+                    <span className="ds-line-text">Or Enter with Email</span>
                     <hr className="ds-line" />
                 </div>
 
-                <div className='ds-login-form'>
-                    <div className='ds-input-container'>
-                        <label htmlFor='ds-email' className='ds-login-label'>Email</label>
-                        <input id='ds-email' className='ds-input' type='text' value={EmailVal} onChange={(e) => { setEmailVal(e.target.value) }} placeholder='Enter Your Email' />
-                    </div>
-                    <div className='ds-input-container'>
-                        <label htmlFor='ds-password' className='ds-login-label'>Password</label>
-                        <span className='ds-pass-content'>
-                            <input id='ds-password' className='ds-input' type={PassType} placeholder='Password' value={PassVal} onChange={(e) => { setPassVal(e.target.value) }} />
-                            {'password' === PassType ?
-                                <svg xmlns="http://www.w3.org/2000/svg" height="14" width="15.75" viewBox="0 0 576 512" onClick={() => { sawPassword() }}>
-                                    <path fill='gray' d="M288 80c-65.2 0-118.8 29.6-159.9 67.7C89.6 183.5 63 226 49.4 256c13.6 30 40.2 72.5 78.6 108.3C169.2 402.4 222.8 432 288 432s118.8-29.6 159.9-67.7C486.4 328.5 513 286 526.6 256c-13.6-30-40.2-72.5-78.6-108.3C406.8 109.6 353.2 80 288 80zM95.4 112.6C142.5 68.8 207.2 32 288 32s145.5 36.8 192.6 80.6c46.8 43.5 78.1 95.4 93 131.1c3.3 7.9 3.3 16.7 0 24.6c-14.9 35.7-46.2 87.7-93 131.1C433.5 443.2 368.8 480 288 480s-145.5-36.8-192.6-80.6C48.6 356 17.3 304 2.5 268.3c-3.3-7.9-3.3-16.7 0-24.6C17.3 208 48.6 156 95.4 112.6zM288 336c44.2 0 80-35.8 80-80s-35.8-80-80-80c-.7 0-1.3 0-2 0c1.3 5.1 2 10.5 2 16c0 35.3-28.7 64-64 64c-5.5 0-10.9-.7-16-2c0 .7 0 1.3 0 2c0 44.2 35.8 80 80 80zm0-208a128 128 0 1 1 0 256 128 128 0 1 1 0-256z" />
-                                </svg>
-                                :
-                                <svg xmlns="http://www.w3.org/2000/svg" height="14" width="17.5" viewBox="0 0 640 512" onClick={() => { sawPassword() }}>
-                                    <path fill='gray' d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zm151 118.3C226 97.7 269.5 80 320 80c65.2 0 118.8 29.6 159.9 67.7C518.4 183.5 545 226 558.6 256c-12.6 28-36.6 66.8-70.9 100.9l-53.8-42.2c9.1-17.6 14.2-37.5 14.2-58.7c0-70.7-57.3-128-128-128c-32.2 0-61.7 11.9-84.2 31.5l-46.1-36.1zM394.9 284.2l-81.5-63.9c4.2-8.5 6.6-18.2 6.6-28.3c0-5.5-.7-10.9-2-16c.7 0 1.3 0 2 0c44.2 0 80 35.8 80 80c0 9.9-1.8 19.4-5.1 28.2zm9.4 130.3C378.8 425.4 350.7 432 320 432c-65.2 0-118.8-29.6-159.9-67.7C121.6 328.5 95 286 81.4 256c8.3-18.4 21.5-41.5 39.4-64.8L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5l-41.9-33zM192 256c0 70.7 57.3 128 128 128c13.3 0 26.1-2 38.2-5.8L302 334c-23.5-5.4-43.1-21.2-53.7-42.3l-56.1-44.2c-.2 2.8-.3 5.6-.3 8.5z" />
-                                </svg>
-                            }
+                {/* Login and Sign Page */}
+
+                {'login' === login_type ?
+                    <>
+                        <div className='ds-login-form'>
+                            <div className='ds-input-container'>
+                                <label htmlFor='ds-email' className='ds-login-label'>Email</label>
+                                <input id='ds-email' className='ds-input' type='email' autoComplete="off" value={EmailVal} onChange={(e) => { setEmailVal(e.target.value) }} placeholder='Enter Your Email' />
+                            </div>
+                            <div className='ds-input-container'>
+                                <label htmlFor='ds-password' className='ds-login-label'>Password</label>
+                                <span className='ds-pass-content'>
+                                    <input id='ds-password' className='ds-input' type={PassType} placeholder='Password' value={PassVal} onChange={(e) => { setPassVal(e.target.value) }} />
+                                    {'password' === PassType ?
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="14" width="15.75" viewBox="0 0 576 512" onClick={() => { sawPassword() }}>
+                                            <path fill='gray' d="M288 80c-65.2 0-118.8 29.6-159.9 67.7C89.6 183.5 63 226 49.4 256c13.6 30 40.2 72.5 78.6 108.3C169.2 402.4 222.8 432 288 432s118.8-29.6 159.9-67.7C486.4 328.5 513 286 526.6 256c-13.6-30-40.2-72.5-78.6-108.3C406.8 109.6 353.2 80 288 80zM95.4 112.6C142.5 68.8 207.2 32 288 32s145.5 36.8 192.6 80.6c46.8 43.5 78.1 95.4 93 131.1c3.3 7.9 3.3 16.7 0 24.6c-14.9 35.7-46.2 87.7-93 131.1C433.5 443.2 368.8 480 288 480s-145.5-36.8-192.6-80.6C48.6 356 17.3 304 2.5 268.3c-3.3-7.9-3.3-16.7 0-24.6C17.3 208 48.6 156 95.4 112.6zM288 336c44.2 0 80-35.8 80-80s-35.8-80-80-80c-.7 0-1.3 0-2 0c1.3 5.1 2 10.5 2 16c0 35.3-28.7 64-64 64c-5.5 0-10.9-.7-16-2c0 .7 0 1.3 0 2c0 44.2 35.8 80 80 80zm0-208a128 128 0 1 1 0 256 128 128 0 1 1 0-256z" />
+                                        </svg>
+                                        :
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="14" width="17.5" viewBox="0 0 640 512" onClick={() => { sawPassword() }}>
+                                            <path fill='gray' d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zm151 118.3C226 97.7 269.5 80 320 80c65.2 0 118.8 29.6 159.9 67.7C518.4 183.5 545 226 558.6 256c-12.6 28-36.6 66.8-70.9 100.9l-53.8-42.2c9.1-17.6 14.2-37.5 14.2-58.7c0-70.7-57.3-128-128-128c-32.2 0-61.7 11.9-84.2 31.5l-46.1-36.1zM394.9 284.2l-81.5-63.9c4.2-8.5 6.6-18.2 6.6-28.3c0-5.5-.7-10.9-2-16c.7 0 1.3 0 2 0c44.2 0 80 35.8 80 80c0 9.9-1.8 19.4-5.1 28.2zm9.4 130.3C378.8 425.4 350.7 432 320 432c-65.2 0-118.8-29.6-159.9-67.7C121.6 328.5 95 286 81.4 256c8.3-18.4 21.5-41.5 39.4-64.8L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5l-41.9-33zM192 256c0 70.7 57.3 128 128 128c13.3 0 26.1-2 38.2-5.8L302 334c-23.5-5.4-43.1-21.2-53.7-42.3l-56.1-44.2c-.2 2.8-.3 5.6-.3 8.5z" />
+                                        </svg>
+                                    }
+
+                                </span>
+                            </div>
+                            <div className='ds-login-req'>
+                                <button className='ds-gradient-btn ds-login-btn' onClick={() => { Update_login() }}>Login</button>
+                                <p className='ds-signup-link'>Don't Have an Account ? <button onClick={() => { setLogin_type('signup') }}>Sign Up</button></p>
+                            </div>
+                        </div>
+                    </>
+                    :
+                    <div className='ds-login-form'>
+
+                        {'step-1' === StepCount &&
+                            <>
+                                <div className='ds-input-container'>
+                                    <label htmlFor='ds-email' className='ds-login-label'>Username</label>
+                                    <input id='ds-email' className='ds-input' type='text' autoComplete="off" value={Username} onChange={(e) => { setUsername(e.target.value) }} placeholder='Enter Your Email' />
+                                    {ShowError && !Username.trim() &&
+                                        <p className='ds-loginform-error'>please enter username</p>
+                                    }
+                                </div>
+                                <div className='ds-input-container'>
+                                    <label htmlFor='ds-email' className='ds-login-label'>Email</label>
+                                    <input id='ds-email' className='ds-input' type='email' autoComplete="off" value={EmailVal} onChange={(e) => { setEmailVal(e.target.value) }} placeholder='Enter Your Email' />
+                                    {ShowError && !regex.test(EmailVal) &&
+                                        <p className='ds-loginform-error'>please enter valid email</p>
+                                    }
+                                </div>
+                                <div className='ds-step-content'>
+                                    <button className='ds-gradient-btn' onClick={() => { handleValue() }}>Next</button>
+                                </div>
+                            </>
+                        }
+
+                        {'step-2' === StepCount &&
+                            <>
+                                <div className='ds-input-container'>
+                                    <label htmlFor='ds-password' className='ds-login-label'>Password</label>
+                                    <span className='ds-pass-content'>
+                                        <input id='ds-password' className='ds-input' type={PassType} placeholder='Password' value={PassVal} onChange={(e) => { setPassVal(e.target.value) }} />
+                                        {'password' === PassType ?
+                                            <svg xmlns="http://www.w3.org/2000/svg" height="14" width="15.75" viewBox="0 0 576 512" onClick={() => { sawPassword() }}>
+                                                <path fill='gray' d="M288 80c-65.2 0-118.8 29.6-159.9 67.7C89.6 183.5 63 226 49.4 256c13.6 30 40.2 72.5 78.6 108.3C169.2 402.4 222.8 432 288 432s118.8-29.6 159.9-67.7C486.4 328.5 513 286 526.6 256c-13.6-30-40.2-72.5-78.6-108.3C406.8 109.6 353.2 80 288 80zM95.4 112.6C142.5 68.8 207.2 32 288 32s145.5 36.8 192.6 80.6c46.8 43.5 78.1 95.4 93 131.1c3.3 7.9 3.3 16.7 0 24.6c-14.9 35.7-46.2 87.7-93 131.1C433.5 443.2 368.8 480 288 480s-145.5-36.8-192.6-80.6C48.6 356 17.3 304 2.5 268.3c-3.3-7.9-3.3-16.7 0-24.6C17.3 208 48.6 156 95.4 112.6zM288 336c44.2 0 80-35.8 80-80s-35.8-80-80-80c-.7 0-1.3 0-2 0c1.3 5.1 2 10.5 2 16c0 35.3-28.7 64-64 64c-5.5 0-10.9-.7-16-2c0 .7 0 1.3 0 2c0 44.2 35.8 80 80 80zm0-208a128 128 0 1 1 0 256 128 128 0 1 1 0-256z" />
+                                            </svg>
+                                            :
+                                            <svg xmlns="http://www.w3.org/2000/svg" height="14" width="17.5" viewBox="0 0 640 512" onClick={() => { sawPassword() }}>
+                                                <path fill='gray' d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zm151 118.3C226 97.7 269.5 80 320 80c65.2 0 118.8 29.6 159.9 67.7C518.4 183.5 545 226 558.6 256c-12.6 28-36.6 66.8-70.9 100.9l-53.8-42.2c9.1-17.6 14.2-37.5 14.2-58.7c0-70.7-57.3-128-128-128c-32.2 0-61.7 11.9-84.2 31.5l-46.1-36.1zM394.9 284.2l-81.5-63.9c4.2-8.5 6.6-18.2 6.6-28.3c0-5.5-.7-10.9-2-16c.7 0 1.3 0 2 0c44.2 0 80 35.8 80 80c0 9.9-1.8 19.4-5.1 28.2zm9.4 130.3C378.8 425.4 350.7 432 320 432c-65.2 0-118.8-29.6-159.9-67.7C121.6 328.5 95 286 81.4 256c8.3-18.4 21.5-41.5 39.4-64.8L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5l-41.9-33zM192 256c0 70.7 57.3 128 128 128c13.3 0 26.1-2 38.2-5.8L302 334c-23.5-5.4-43.1-21.2-53.7-42.3l-56.1-44.2c-.2 2.8-.3 5.6-.3 8.5z" />
+                                            </svg>
+                                        }
 
 
-                        </span>
-                    </div>
-                    <div className='ds-tnc'>
-                        <input id='tandc' type='checkbox' className='ds-checkbox' />
-                        <label htmlFor='tandc'>
-                            Agree with Terms and conditions of Data Sphere
-                        </label>
-                    </div>
-                </div>
+                                    </span>
+                                    {
+                                        ShowError && PassError &&
+                                        <p className='ds-loginform-error'>{PassError}</p>
+                                    }
+                                </div>
+                                <div className='ds-input-container'>
+                                    <label htmlFor='ds-password' className='ds-login-label'>Confirm Password</label>
+                                    <span className='ds-pass-content'>
+                                        <input id='ds-password' className='ds-input' type={PassType} placeholder='Password' value={ConfirmPass} onChange={(e) => { setConfirmPass(e.target.value) }} />
+                                        {'password' === PassType ?
+                                            <svg xmlns="http://www.w3.org/2000/svg" height="14" width="15.75" viewBox="0 0 576 512" onClick={() => { sawPassword() }}>
+                                                <path fill='gray' d="M288 80c-65.2 0-118.8 29.6-159.9 67.7C89.6 183.5 63 226 49.4 256c13.6 30 40.2 72.5 78.6 108.3C169.2 402.4 222.8 432 288 432s118.8-29.6 159.9-67.7C486.4 328.5 513 286 526.6 256c-13.6-30-40.2-72.5-78.6-108.3C406.8 109.6 353.2 80 288 80zM95.4 112.6C142.5 68.8 207.2 32 288 32s145.5 36.8 192.6 80.6c46.8 43.5 78.1 95.4 93 131.1c3.3 7.9 3.3 16.7 0 24.6c-14.9 35.7-46.2 87.7-93 131.1C433.5 443.2 368.8 480 288 480s-145.5-36.8-192.6-80.6C48.6 356 17.3 304 2.5 268.3c-3.3-7.9-3.3-16.7 0-24.6C17.3 208 48.6 156 95.4 112.6zM288 336c44.2 0 80-35.8 80-80s-35.8-80-80-80c-.7 0-1.3 0-2 0c1.3 5.1 2 10.5 2 16c0 35.3-28.7 64-64 64c-5.5 0-10.9-.7-16-2c0 .7 0 1.3 0 2c0 44.2 35.8 80 80 80zm0-208a128 128 0 1 1 0 256 128 128 0 1 1 0-256z" />
+                                            </svg>
+                                            :
+                                            <svg xmlns="http://www.w3.org/2000/svg" height="14" width="17.5" viewBox="0 0 640 512" onClick={() => { sawPassword() }}>
+                                                <path fill='gray' d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zm151 118.3C226 97.7 269.5 80 320 80c65.2 0 118.8 29.6 159.9 67.7C518.4 183.5 545 226 558.6 256c-12.6 28-36.6 66.8-70.9 100.9l-53.8-42.2c9.1-17.6 14.2-37.5 14.2-58.7c0-70.7-57.3-128-128-128c-32.2 0-61.7 11.9-84.2 31.5l-46.1-36.1zM394.9 284.2l-81.5-63.9c4.2-8.5 6.6-18.2 6.6-28.3c0-5.5-.7-10.9-2-16c.7 0 1.3 0 2 0c44.2 0 80 35.8 80 80c0 9.9-1.8 19.4-5.1 28.2zm9.4 130.3C378.8 425.4 350.7 432 320 432c-65.2 0-118.8-29.6-159.9-67.7C121.6 328.5 95 286 81.4 256c8.3-18.4 21.5-41.5 39.4-64.8L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5l-41.9-33zM192 256c0 70.7 57.3 128 128 128c13.3 0 26.1-2 38.2-5.8L302 334c-23.5-5.4-43.1-21.2-53.7-42.3l-56.1-44.2c-.2 2.8-.3 5.6-.3 8.5z" />
+                                            </svg>
+                                        }
+                                    </span>
+                                    {
+                                        ShowError && PassError &&
+                                        <p className='ds-loginform-error'>{PassError}</p>
+                                    }
+                                </div>
+                                <div className='ds-tnc'>
+                                    <input id='tandc' type='checkbox' className='ds-checkbox' />
+                                    <label htmlFor='tandc'>
+                                        Agree with Terms and conditions of Data Sphere
+                                    </label>
+                                </div>
+                                <button className='ds-gradient-btn ds-login-btn' onClick={() => { handleValue('signup') }}>Sign Up</button>
+                            </>
+                        }
 
-                <div className='ds-login-req'>
-                    <button className='ds-gradient-btn ds-login-btn' onClick={() => { Update_login() }}>
-                        Login
-                    </button>
-                </div>
+                        <div className='ds-login-req'>
+                            <p className='ds-signup-link'>Already Have an Account ? <button onClick={() => { setLogin_type('login') }}>Login</button></p>
+                        </div>
+                    </div>
+
+                }
 
             </div>
         </div>
@@ -177,10 +281,12 @@ const Login_page = (props) => {
 
 const get_login_data = state => ({
     AccountDetails: state.LoginData,
+    ShowToast: state.ShowNotification
 });
 
 const mapsetLoginData = dispatch => ({
-    ds_set_login: (data) => dispatch(SetLogin(data))
+    ds_set_login: (data) => dispatch(SetLogin(data)),
+    ds_set_notification: (massage, description, type) => dispatch(SetNotification(massage, description, type)),
 });
 
 export default connect(get_login_data, mapsetLoginData)(Login_page);

@@ -1,6 +1,8 @@
 @import '/src/style/variable.scss';
 
 .ds-control-panel {
+    position: relative;
+    z-index: 1;
     display: flex;
     justify-content: center;
     align-items: center;

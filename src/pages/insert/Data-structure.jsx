@@ -3,14 +3,12 @@ import { connect } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
 const Data_Structure = (props) => {
-    console.log(props);
 
     const navigation = useNavigate();
     
-    useEffect(() => {
-        console.log(props.AccountDetails);
-        
-        if (!props.AccountDetails.email && !props.AccountDetails.password) {
+    
+    useEffect(() => {        
+        if (!props.AccountDetails.LoginData.email && !props.AccountDetails.LoginData.password) {
             navigation('/login_page');
         }
     }, [])

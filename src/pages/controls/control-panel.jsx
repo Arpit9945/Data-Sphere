@@ -8,9 +8,9 @@ const Control_panel = (props) => {
 
     const navigation = useNavigate()
 
+    // let data = localStorage.getItem('ds-userLoginData');    
+
     useEffect(() => {
-        console.log(props.AccountDetails);
-        
         if (!props.AccountDetails.email && !props.AccountDetails.password) {
             navigation('/login_page');
         }
